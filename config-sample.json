@@ -1,0 +1,23 @@
+{
+    "remoteUrl": "http://xyz.com/xyz",
+    "localUrl": "http://localhost:8888/xyz.com/xyz",
+
+    "ftp": {
+        "host": "ftp.xyz.com",
+        "user": "xyz",
+        "password": "xyz"
+    },
+
+    "remoteDb": {
+        "host": "xyz",
+        "name": "xyz",
+        "user": "xyz",
+        "password": "xyz"
+    },
+
+    "localDb": {
+        "name": "xyz",
+        "user": "root",
+        "password": "root"
+    }
+}
