@@ -4,10 +4,13 @@ var request = require('request');
 var FTP = require('ftp');
 var fs = require('fs');
 var shell = require('shelljs');
-var moment = require('moment');
 
 var config = require(shell.pwd() + '/dbsync/config.json');
 var commands = {};
+
+var isoDate = function () {
+  return (new Date()).toISOString().slice(0, 16).replace(/T|:/g, '-');
+};
 
 var replacements = [
   [config.remoteUrl, config.localUrl]
@@ -19,7 +22,7 @@ commands.push = function() {
 
   // 1. Dump local db
   var localDumpDir = 'dbsync/sql';
-  var localDumpName = 'local-db-' + moment().format('YYYY-MM-DD-HH-mm') + '.sql';
+  var localDumpName = 'local-db-' + isoDate() + '.sql';
   var localDumpFile = localDumpDir + '/' + localDumpName;
   var localDump = 'mysqldump -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' > ' + localDumpFile;
 
@@ -80,7 +83,7 @@ commands.pull = function() {
   console.log('pulling');
   // 1. Dump local db
   var localDumpDir = 'dbsync/sql';
-  var localDumpName = 'local-db-' + moment().format('YYYY-MM-DD-HH-mm') + '.sql';
+  var localDumpName = 'local-db-' + isoDate() + '.sql';
   var localDumpFile = localDumpDir + '/' + localDumpName;
   var localDump = 'mysqldump -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' > ' + localDumpFile;
 

@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "ftp": "^0.3.10",
-    "moment": "^2.10.2",
     "request": "^2.55.0",
     "shelljs": "^0.4.0"
   }
