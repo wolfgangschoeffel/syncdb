@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var request = require('request');
+var remote = require('./lib/remote');
 var ftp = require('./lib/ftp-client');
 var fs = require('fs');
 var shell = require('shelljs');
@@ -14,35 +14,6 @@ function isoDate() {
 
 function replaceInFile(findString, replaceWith, fileName) {
   shell.sed('-i', findString, replaceWith, fileName);
-}
-
-
-function remoteCommand(method, localDumpName, callback) {
-  // TODO: shouldn’t we have some kind of authentication here?
-  request({
-    url: config.remoteUrl + '/dbsync/dbsync.php',
-    method: 'POST',
-    json: true,
-    body: {
-      method: method,
-      localDumpName: localDumpName
-    }
-  }, function(error, response, body) {
-    if (error) {
-      console.log(error);
-      shell.exit(1);
-    } else {
-      callback(body);
-    }
-  });
-}
-
-function remotePush(dumpName, callback) {
-  remoteCommand('push', dumpName, callback);
-}
-
-function remotePull(dumpName, callback) {
-  remoteCommand('pull', dumpName, callback);
 }
 
 function dumpLocalDB() {
@@ -91,7 +62,7 @@ commands.push = function() {
   ftp.put(localDumpFile, function() {
 
     // 4. start remote script
-    remotePush(localDumpName, function(body) {
+    remote.push(localDumpName, function(body) {
       console.log(body);
       shell.exit(0);
     });
@@ -109,7 +80,7 @@ commands.pull = function() {
 
   dumpLocalDB();
 
-  remotePull(localDumpName, function(body) {
+  remote.pull(localDumpName, function(body) {
     var remoteDumpName = body.remoteDumpName;
     var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
 
