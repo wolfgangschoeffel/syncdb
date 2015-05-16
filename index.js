@@ -157,7 +157,7 @@ commands.install = function() {
 var args = process.argv.slice(2);
 var command = args[0];
 
-if (!commands[command]) {
+if (!commands.hasOwnProperty(command)) {
   console.log('Command "' + command + '" not found');
   process.exit(1);
 } else {
