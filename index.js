@@ -181,8 +181,31 @@ commands.install = function() {
 var args = process.argv.slice(2);
 var command = args[0];
 
-if (!commands.hasOwnProperty(command)) {
+if (process.argv.length < 3
+  || command === 'help' || command === '-h' || command === '--help') {
+  var usage = '\n\
+syncdb is a tool for syncing mysql dbs via ftp.\n\
+available commands:\n\
+\n\
+  push\n\
+    populate remote db with dump of local db\n\
+\n\
+  pull\n\
+    the other way round\n\
+\n\
+  clean\n\
+    remove old database dumps from dbsync folder\n\
+\n\
+  install\n\
+    install remote.php script on remote server\n\
+\n\
+  help\n\
+    display this usage information\n\
+  ';
+  console.log(usage);
+} else if (!commands.hasOwnProperty(command)) {
   console.log('Command "' + command + '" not found');
+  console.log('Run "syncdb help" for more information');
   process.exit(1);
 } else {
   commands[command].call();
