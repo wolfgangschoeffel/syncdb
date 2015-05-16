@@ -8,7 +8,7 @@ var shell = require('shelljs');
 var config = require(shell.pwd() + '/dbsync/config.json');
 var commands = {};
 
-var isoDate = function () {
+function isoDate() {
   return (new Date()).toISOString().slice(0, 16).replace(/T|:/g, '-');
 };
 
