@@ -60,6 +60,34 @@ function ftpPutFile(fileName, callback) {
   });
 }
 
+function remoteCommand(method, localDumpName, callback) {
+  // TODO: shouldn’t we have some kind of authentication here?
+  request({
+    url: config.remoteUrl + '/dbsync/dbsync.php',
+    method: 'POST',
+    json: true,
+    body: {
+      method: method,
+      localDumpName: localDumpName
+    }
+  }, function(error, response, body) {
+    if (error) {
+      console.log(error);
+      shell.exit(1);
+    } else {
+      callback(body);
+    }
+  });
+}
+
+function remotePush(dumpName, callback) {
+  remoteCommand('push', dumpName, callback);
+}
+
+function remotePull(dumpName, callback) {
+  remoteCommand('pull', dumpName, callback);
+}
+
 function dumpLocalDB() {
   var localDumpDir = 'dbsync/sql';
   var localDumpName = 'local-db-' + isoDate() + '.sql';
@@ -93,22 +121,9 @@ commands.push = function() {
   ftpPutFile(localDumpFile, function() {
 
     // 4. start remote script
-    // TODO: shouldn’t we have some kind of authentication here?
-    request({
-      url: config.remoteUrl + '/dbsync/dbsync.php',
-      method: 'POST',
-      json: true,
-      body: {
-        method: 'push',
-        localDumpName: localDumpName
-      }
-    }, function(error, response, body) {
-      if (error) {
-        console.log(error);
-      }
-      if (!error && response.statusCode == 200) {
-        console.log(body);
-      }
+    remotePush(localDumpName, function(body) {
+      console.log(body);
+      shell.exit(0);
     });
   });
 };
@@ -124,40 +139,26 @@ commands.pull = function() {
 
   dumpLocalDB();
 
-  request({
-    url: config.remoteUrl + '/dbsync/remote.php',
-    method: 'POST',
-    json: true,
-    body: {
-      method: 'pull',
-      localDumpName: localDumpName
-    }
-  }, function(error, response, body) {
-    if (error) {
-      console.log(error);
-    }
-    if (!error && response.statusCode == 200) {
+  remotePull(localDumpName, function(body) {
+    var remoteDumpName = body.remoteDumpName;
+    var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
 
-      var remoteDumpName = body.remoteDumpName;
-      var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
+    // download via ftp
+    ftpGetFile(remoteDumpFile, function() {
 
-      // download via ftp
-      ftpGetFile(remoteDumpFile, function() {
-
-        replacements.forEach(function(replacement) {
-          shell.sed('-i', replacement[1], replacement[0], remoteDumpFile);
-        });
-
-        var localPopulate = 'mysql -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' < ' + remoteDumpFile;
-
-        if (shell.exec(localPopulate).code !== 0) {
-          console.log('populating failed');
-          shell.exit(1);
-        }
-
-        console.log('pull ready');
+      replacements.forEach(function(replacement) {
+        shell.sed('-i', replacement[1], replacement[0], remoteDumpFile);
       });
-    }
+
+      var localPopulate = 'mysql -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' < ' + remoteDumpFile;
+
+      if (shell.exec(localPopulate).code !== 0) {
+        console.log('populating failed');
+        shell.exit(1);
+      }
+
+      console.log('pull ready');
+    });
   });
 }
 
