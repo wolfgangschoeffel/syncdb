@@ -45,6 +45,21 @@ function ftpGetFile(fileName, callback) {
   });
 }
 
+function ftpPutFile(fileName, callback) {
+
+  withFtp(function(ftp) {
+
+    ftp.put(fileName, fileName, function(err) {
+      if (err) {
+        throw err;
+      }
+      ftp.end();
+
+      callback(fileName);
+    });
+  });
+}
+
 function dumpLocalDB() {
   var localDumpDir = 'dbsync/sql';
   var localDumpName = 'local-db-' + isoDate() + '.sql';
@@ -75,32 +90,25 @@ commands.push = function() {
   });
 
   // 3. upload dump via ftp
-  withFtp(function(ftp) {
-    ftp.put(localDumpFile, localDumpFile, function(err) {
-      if (err) {
-        throw err;
+  ftpPutFile(localDumpFile, function() {
+
+    // 4. start remote script
+    // TODO: shouldn’t we have some kind of authentication here?
+    request({
+      url: config.remoteUrl + '/dbsync/dbsync.php',
+      method: 'POST',
+      json: true,
+      body: {
+        method: 'push',
+        localDumpName: localDumpName
       }
-      ftp.end();
-
-      // 4. start remote script
-      // TODO: shouldn’t we have some kind of authentication here?
-      request({
-        url: config.remoteUrl + '/dbsync/dbsync.php',
-        method: 'POST',
-        json: true,
-        body: {
-          method: 'push',
-          localDumpName: localDumpName
-        }
-      }, function(error, response, body) {
-        if (error) {
-          console.log(error);
-        }
-        if (!error && response.statusCode == 200) {
-          console.log(body);
-        }
-      });
-
+    }, function(error, response, body) {
+      if (error) {
+        console.log(error);
+      }
+      if (!error && response.statusCode == 200) {
+        console.log(body);
+      }
     });
   });
 };
