@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var request = require('request');
-var FTP = require('ftp');
+var ftp = require('./lib/ftp-client');
 var fs = require('fs');
 var shell = require('shelljs');
 
@@ -16,53 +16,6 @@ function replaceInFile(findString, replaceWith, fileName) {
   shell.sed('-i', findString, replaceWith, fileName);
 }
 
-function withFtp(callback) {
-  var ftp = new FTP();
-
-  ftp.on('ready', function() {
-    callback(ftp);
-  });
-
-  ftp.connect({
-    host: config.ftp.host,
-    user: config.ftp.user,
-    password: config.ftp.password
-  });
-}
-
-function ftpGetFile(fileName, callback) {
-
-  withFtp(function(ftp) {
-
-    ftp.get(fileName, function(err, stream) {
-      if (err) {
-        throw err;
-      }
-
-      stream.once('close', function() {
-        ftp.end();
-        callback(fileName);
-      });
-
-      stream.pipe(fs.createWriteStream(fileName));
-    });
-  });
-}
-
-function ftpPutFile(fileName, callback) {
-
-  withFtp(function(ftp) {
-
-    ftp.put(fileName, fileName, function(err) {
-      if (err) {
-        throw err;
-      }
-      ftp.end();
-
-      callback(fileName);
-    });
-  });
-}
 
 function remoteCommand(method, localDumpName, callback) {
   // TODO: shouldn’t we have some kind of authentication here?
@@ -135,7 +88,7 @@ commands.push = function() {
   });
 
   // 3. upload dump via ftp
-  ftpPutFile(localDumpFile, function() {
+  ftp.put(localDumpFile, function() {
 
     // 4. start remote script
     remotePush(localDumpName, function(body) {
@@ -161,7 +114,7 @@ commands.pull = function() {
     var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
 
     // download via ftp
-    ftpGetFile(remoteDumpFile, function() {
+    ftp.get(remoteDumpFile, function() {
 
       replacements.forEach(function(replacement) {
         replaceInFile(replacement[1], replacement[0], remoteDumpFile);
