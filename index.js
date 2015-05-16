@@ -15,7 +15,7 @@ function isoDate() {
 function withFtp(callback) {
   var ftp = new FTP();
 
-  ftp.on('ready', function () {
+  ftp.on('ready', function() {
     callback(ftp);
   });
 
@@ -23,6 +23,25 @@ function withFtp(callback) {
     host: config.ftp.host,
     user: config.ftp.user,
     password: config.ftp.password
+  });
+}
+
+function ftpGetFile(fileName, callback) {
+
+  withFtp(function(ftp) {
+
+    ftp.get(fileName, function(err, stream) {
+      if (err) {
+        throw err;
+      }
+
+      stream.once('close', function() {
+        ftp.end();
+        callback(fileName);
+      });
+
+      stream.pipe(fs.createWriteStream(fileName));
+    });
   });
 }
 
@@ -63,6 +82,8 @@ commands.push = function() {
       }
       ftp.end();
 
+      // 4. start remote script
+      // TODO: shouldn’t we have some kind of authentication here?
       request({
         url: config.remoteUrl + '/dbsync/dbsync.php',
         method: 'POST',
@@ -113,26 +134,20 @@ commands.pull = function() {
       var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
 
       // download via ftp
-      withFtp(function(ftp) {
-        ftp.get(remoteDumpFile, function(err, stream) {
-          if (err) { throw err; }
-          stream.once('close', function() { ftp.end(); });
-          stream.pipe(fs.createWriteStream(remoteDumpFile));
+      ftpGetFile(remoteDumpFile, function() {
 
-          replacements.forEach(function(replacement) {
-            shell.sed('-i', replacement[1], replacement[0], remoteDumpFile);
-          });
-
-          var localPopulate = 'mysql -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' < ' + remoteDumpFile;
-
-          if (shell.exec(localPopulate).code !== 0) {
-            console.log('populating failed');
-            shell.exit(1);
-          }
-
-          console.log('pull ready');
-
+        replacements.forEach(function(replacement) {
+          shell.sed('-i', replacement[1], replacement[0], remoteDumpFile);
         });
+
+        var localPopulate = 'mysql -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' < ' + remoteDumpFile;
+
+        if (shell.exec(localPopulate).code !== 0) {
+          console.log('populating failed');
+          shell.exit(1);
+        }
+
+        console.log('pull ready');
       });
     }
   });
