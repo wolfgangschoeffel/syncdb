@@ -10,8 +10,11 @@ var localDB = require('./lib/local-db')(config.localDb);
 
 var commands = {};
 
-function replaceInFile(findString, replaceWith, fileName) {
-  shell.sed('-i', findString, replaceWith, fileName);
+function replaceInFile(searchString, replacement, file) {
+  var regex = new RegExp(searchString, 'g');
+  var result = fs.readFileSync(file, 'utf8').replace(regex, replacement);
+  fs.writeFileSync(file, result, 'utf8');
+  return result;
 }
 
 var replacements = [
