@@ -4,44 +4,14 @@ var shell = require('shelljs');
 
 var config = require(shell.pwd() + '/dbsync/config.json');
 
-var ftp = require('./lib/ftp-client')(config.ftp);
-var remote = require('./lib/remote')(config.remoteUrl);
+var ftp     = require('./lib/ftp-client')(config.ftp);
+var remote  = require('./lib/remote')(config.remoteUrl);
+var localDB = require('./lib/local-db')(config.localDb);
 
 var commands = {};
 
-function isoDate() {
-  return (new Date()).toISOString().slice(0, 16).replace(/T|:/g, '-');
-}
-
 function replaceInFile(findString, replaceWith, fileName) {
   shell.sed('-i', findString, replaceWith, fileName);
-}
-
-function dumpLocalDB() {
-  var localDumpDir = 'dbsync/sql';
-  var localDumpName = 'local-db-' + isoDate() + '.sql';
-  var localDumpFile = localDumpDir + '/' + localDumpName;
-  var localDump = 'mysqldump -u ' + config.localDb.user
-    + ' -p' + config.localDb.password + ' ' + config.localDb.name
-    + ' > ' + localDumpFile;
-
-  if (shell.exec(localDump).code !== 0) {
-    console.log('dump failed');
-    shell.exit(1);
-  }
-
-  return localDumpFile;
-}
-
-function populateLocalDB(dumpFile) {
-  var localPopulate = 'mysql -u ' + config.localDb.user
-    + ' -p' + config.localDb.password + ' ' + config.localDb.name
-    + ' < ' + dumpFile;
-
-  if (shell.exec(localPopulate).code !== 0) {
-    console.log('populating failed');
-    shell.exit(1);
-  }
 }
 
 var replacements = [
@@ -52,7 +22,7 @@ var replacements = [
 commands.push = function() {
 
   // 1. Dump local db
-  var localDumpFile = dumpLocalDB();
+  var localDumpFile = localDB.dump();
 
   // 2. search and replace
   replacements.forEach(function(replacement) {
@@ -70,16 +40,11 @@ commands.push = function() {
   });
 };
 
-//
-//
-//
-//
-
 commands.pull = function() {
 
   console.log('pulling');
 
-  dumpLocalDB();
+  localDB.dump();
 
   remote.pull(localDumpName, function(body) {
     var remoteDumpName = body.remoteDumpName;
@@ -92,7 +57,7 @@ commands.pull = function() {
         replaceInFile(replacement[1], replacement[0], remoteDumpFile);
       });
 
-      populateLocalDB(remoteDumpFile);
+      localDB.poopulate(remoteDumpFile);
 
       console.log('pull ready');
     });
