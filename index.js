@@ -10,7 +10,7 @@ var commands = {};
 
 function isoDate() {
   return (new Date()).toISOString().slice(0, 16).replace(/T|:/g, '-');
-};
+}
 
 function withFtp(callback) {
   var ftp = new FTP();
@@ -24,16 +24,9 @@ function withFtp(callback) {
     user: config.ftp.user,
     password: config.ftp.password
   });
-};
+}
 
-var replacements = [
-  [config.remoteUrl, config.localUrl]
-  //,[config.localDb.charset, config.remoteDb.charset]
-];
-
-commands.push = function() {
-
-  // 1. Dump local db
+function dumpLocalDB() {
   var localDumpDir = 'dbsync/sql';
   var localDumpName = 'local-db-' + isoDate() + '.sql';
   var localDumpFile = localDumpDir + '/' + localDumpName;
@@ -43,6 +36,19 @@ commands.push = function() {
     console.log('dump failed');
     shell.exit(1);
   }
+
+  return localDumpFile;
+}
+
+var replacements = [
+  [config.remoteUrl, config.localUrl]
+  //,[config.localDb.charset, config.remoteDb.charset]
+];
+
+commands.push = function() {
+
+  // 1. Dump local db
+  var localDumpFile = dumpLocalDB();
 
   // 2. search and replace
   replacements.forEach(function(replacement) {
@@ -86,16 +92,8 @@ commands.push = function() {
 commands.pull = function() {
 
   console.log('pulling');
-  // 1. Dump local db
-  var localDumpDir = 'dbsync/sql';
-  var localDumpName = 'local-db-' + isoDate() + '.sql';
-  var localDumpFile = localDumpDir + '/' + localDumpName;
-  var localDump = 'mysqldump -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' > ' + localDumpFile;
 
-  if (shell.exec(localDump).code !== 0) {
-    console.log('dump failed');
-    shell.exit(1);
-  }
+  dumpLocalDB();
 
   request({
     url: config.remoteUrl + '/dbsync/remote.php',
