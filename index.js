@@ -2,7 +2,6 @@
 
 var remote = require('./lib/remote');
 var ftp = require('./lib/ftp-client');
-var fs = require('fs');
 var shell = require('shelljs');
 
 var config = require(shell.pwd() + '/dbsync/config.json');
