@@ -3,10 +3,11 @@
 var request = require('request');
 var FTP = require('ftp');
 var fs = require('fs');
-var config = require(process.cwd() + '/dbsync/config.json');
 var shell = require('shelljs');
-var commands = {};
 var moment = require('moment');
+
+var config = require(shell.pwd() + '/dbsync/config.json');
+var commands = {};
 
 var replacements = [
   [config.remoteUrl, config.localUrl]
