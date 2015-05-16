@@ -12,6 +12,10 @@ function isoDate() {
   return (new Date()).toISOString().slice(0, 16).replace(/T|:/g, '-');
 }
 
+function replaceInFile(findString, replaceWith, fileName) {
+  shell.sed('-i', findString, replaceWith, fileName);
+}
+
 function withFtp(callback) {
   var ftp = new FTP();
 
@@ -114,7 +118,7 @@ commands.push = function() {
 
   // 2. search and replace
   replacements.forEach(function(replacement) {
-    shell.sed('-i', replacement[0], replacement[1], localDumpFile);
+    replaceInFile(replacement[0], replacement[1], localDumpFile);
   });
 
   // 3. upload dump via ftp
@@ -147,7 +151,7 @@ commands.pull = function() {
     ftpGetFile(remoteDumpFile, function() {
 
       replacements.forEach(function(replacement) {
-        shell.sed('-i', replacement[1], replacement[0], remoteDumpFile);
+        replaceInFile(replacement[1], replacement[0], remoteDumpFile);
       });
 
       var localPopulate = 'mysql -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' < ' + remoteDumpFile;
