@@ -12,5 +12,8 @@
     "ftp": "^0.3.10",
     "request": "^2.55.0",
     "shelljs": "^0.4.0"
+  },
+  "devDependencies": {
+    "should": "^6.0.1"
   }
 }
