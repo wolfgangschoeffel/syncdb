@@ -12,13 +12,26 @@ function isoDate() {
   return (new Date()).toISOString().slice(0, 16).replace(/T|:/g, '-');
 };
 
+function withFtp(callback) {
+  var ftp = new FTP();
+
+  ftp.on('ready', function () {
+    callback(ftp);
+  });
+
+  ftp.connect({
+    host: config.ftp.host,
+    user: config.ftp.user,
+    password: config.ftp.password
+  });
+};
+
 var replacements = [
   [config.remoteUrl, config.localUrl]
   //,[config.localDb.charset, config.remoteDb.charset]
 ];
 
 commands.push = function() {
-  var ftp = new FTP();
 
   // 1. Dump local db
   var localDumpDir = 'dbsync/sql';
@@ -37,7 +50,7 @@ commands.push = function() {
   });
 
   // 3. upload dump via ftp
-  ftp.on('ready', function() {
+  withFtp(function(ftp) {
     ftp.put(localDumpFile, localDumpFile, function(err) {
       if (err) {
         throw err;
@@ -63,14 +76,7 @@ commands.push = function() {
 
     });
   });
-
-  ftp.connect({
-    host: config.ftp.host,
-    user: config.ftp.user,
-    password: config.ftp.password
-  });
-
-}
+};
 
 //
 //
@@ -78,7 +84,6 @@ commands.push = function() {
 //
 
 commands.pull = function() {
-  var ftp = new FTP();
 
   console.log('pulling');
   // 1. Dump local db
@@ -110,7 +115,7 @@ commands.pull = function() {
       var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
 
       // download via ftp
-      ftp.on('ready', function() {
+      withFtp(function(ftp) {
         ftp.get(remoteDumpFile, function(err, stream) {
           if (err) { throw err; }
           stream.once('close', function() { ftp.end(); });
@@ -131,13 +136,6 @@ commands.pull = function() {
 
         });
       });
-
-      ftp.connect({
-        host: config.ftp.host,
-        user: config.ftp.user,
-        password: config.ftp.password
-      });
-
     }
   });
 }
