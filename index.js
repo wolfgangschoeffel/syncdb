@@ -108,6 +108,17 @@ function dumpLocalDB() {
   return localDumpFile;
 }
 
+function populateLocalDB(dumpFile) {
+  var localPopulate = 'mysql -u ' + config.localDb.user
+    + ' -p' + config.localDb.password + ' ' + config.localDb.name
+    + ' < ' + dumpFile;
+
+  if (shell.exec(localPopulate).code !== 0) {
+    console.log('populating failed');
+    shell.exit(1);
+  }
+}
+
 var replacements = [
   [config.remoteUrl, config.localUrl]
   //,[config.localDb.charset, config.remoteDb.charset]
@@ -156,12 +167,7 @@ commands.pull = function() {
         replaceInFile(replacement[1], replacement[0], remoteDumpFile);
       });
 
-      var localPopulate = 'mysql -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' < ' + remoteDumpFile;
-
-      if (shell.exec(localPopulate).code !== 0) {
-        console.log('populating failed');
-        shell.exit(1);
-      }
+      populateLocalDB(remoteDumpFile);
 
       console.log('pull ready');
     });
