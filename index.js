@@ -23,18 +23,14 @@ var replacements = [
 ];
 
 commands.push = function() {
-
   // 1. Dump local db
   var localDumpFile = localDB.dump();
-
   // 2. search and replace
   replacements.forEach(function(replacement) {
     replaceInFile(replacement[0], replacement[1], localDumpFile);
   });
-
   // 3. upload dump via ftp
   ftp.put(localDumpFile, function() {
-
     // 4. start remote script
     remote.push(localDumpName, function(body) {
       console.log(body);
@@ -45,14 +41,9 @@ commands.push = function() {
 
 commands.pull = function() {
 
-  console.log('pulling');
+  // localDB.dump(); // (why?)
 
-  localDB.dump();
-
-  remote.pull(localDumpName, function(body) {
-    var remoteDumpName = body.remoteDumpName;
-    var remoteDumpFile = 'dbsync/sql/' + remoteDumpName;
-
+  remote.pull(function(remoteDumpFile) {
     // download via ftp
     ftp.get(remoteDumpFile, function() {
 
@@ -60,9 +51,7 @@ commands.pull = function() {
         replaceInFile(replacement[1], replacement[0], remoteDumpFile);
       });
 
-      localDB.poopulate(remoteDumpFile);
-
-      console.log('pull ready');
+      localDB.populate(remoteDumpFile);
     });
   });
 }
@@ -75,9 +64,9 @@ commands.install = function() {
   // upload remote config and remote php file
 }
 
-///////////////////////////
+///////////////
 // execution //
-///////////////////////////
+///////////////
 
 var args = process.argv.slice(2);
 var command = args[0];
