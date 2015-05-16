@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-var remote = require('./lib/remote');
-var ftp = require('./lib/ftp-client');
 var shell = require('shelljs');
 
 var config = require(shell.pwd() + '/dbsync/config.json');
+
+var ftp = require('./lib/ftp-client')(config.ftp);
+var remote = require('./lib/remote')(config.remoteUrl);
+
 var commands = {};
 
 function isoDate() {
