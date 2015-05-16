@@ -96,7 +96,9 @@ function dumpLocalDB() {
   var localDumpDir = 'dbsync/sql';
   var localDumpName = 'local-db-' + isoDate() + '.sql';
   var localDumpFile = localDumpDir + '/' + localDumpName;
-  var localDump = 'mysqldump -u ' + config.localDb.user + ' -p' + config.localDb.password + ' ' + config.localDb.name + ' > ' + localDumpFile;
+  var localDump = 'mysqldump -u ' + config.localDb.user
+    + ' -p' + config.localDb.password + ' ' + config.localDb.name
+    + ' > ' + localDumpFile;
 
   if (shell.exec(localDump).code !== 0) {
     console.log('dump failed');
