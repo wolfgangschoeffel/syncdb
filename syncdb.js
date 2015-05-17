@@ -9,7 +9,7 @@ function logAsyncErrors(fn) {
     fn(function(error) {
       if (error) {
         console.log('Error: ' + error.message);
-      });
+      }
     });
   };
 }
@@ -31,3 +31,17 @@ program.command('clean')
 program.command('install')
   .description('install remote.php script on remote server')
   .action(logAsyncErrors(commands.install));
+
+// TODO display message end exit with error on unknwon command
+//program.command('*')
+//  .action(function (env) {
+//    console.log("'" + env + "' is not a syncdb command. See 'syncdb --help'");
+//  });
+
+program.parse(process.argv);
+
+if (!program.args.length) {
+  program.outputHelp();
+  process.exit(1);
+}
+
