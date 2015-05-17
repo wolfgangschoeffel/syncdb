@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-var shell = require('shelljs');
+var shell   = require('shelljs');
 
-var config = require(shell.pwd() + '/syncdb/config.json');
+var config  = require(shell.pwd() + '/syncdb/config.json');
 
 var ftp     = require('./lib/ftp-client')(config.ftp);
 var remote  = require('./lib/remote')(config.remoteUrl);
