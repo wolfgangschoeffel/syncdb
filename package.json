@@ -1,5 +1,5 @@
 {
-  "name": "dbsync",
+  "name": "syncdb",
   "version": "0.0.1",
   "description": "syncdb is a tool to sync mysql dbs via ftp",
   "bin": { "syncdb": "./index.js" },

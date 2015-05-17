@@ -2,7 +2,7 @@
 
 var shell = require('shelljs');
 
-var config = require(shell.pwd() + '/dbsync/config.json');
+var config = require(shell.pwd() + '/syncdb/config.json');
 
 var ftp     = require('./lib/ftp-client')(config.ftp);
 var remote  = require('./lib/remote')(config.remoteUrl);
@@ -57,7 +57,7 @@ commands.pull = function() {
 }
 
 commands.clean = function() {
-  shell.rm('dbsync/sql/*.sql');
+  shell.rm('syncdb/sql/*.sql');
 }
 
 commands.install = function() {
@@ -84,7 +84,7 @@ available commands:\n\
     the other way round\n\
 \n\
   clean\n\
-    remove old database dumps from dbsync folder\n\
+    remove old database dumps from syncdb folder\n\
 \n\
   install\n\
     install remote.php script on remote server\n\

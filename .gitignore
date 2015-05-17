@@ -1,5 +1,5 @@
 node_modules
 # vim swap files
 .*.swp
-# dbsync folder with config and test files
-dbsync/
+# syncdb folder with config and test files
+syncdb/
