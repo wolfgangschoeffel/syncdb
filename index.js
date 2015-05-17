@@ -1,6 +1,6 @@
-var shell   = require('shelljs');
+var config  = require(process.cwd() + '/syncdb/config.json');
 
-var config  = require(shell.pwd() + '/syncdb/config.json');
+var fs      = require('fs');
 
 var ftp     = require('./lib/ftp-client')(config.ftp);
 var remote  = require('./lib/remote')(config.remoteUrl);
@@ -32,7 +32,7 @@ commands.push = function() {
     // 4. start remote script
     remote.push(localDumpName, function(body) {
       console.log(body);
-      shell.exit(0);
+      process.exit(0);
     });
   });
 };
@@ -55,7 +55,12 @@ commands.pull = function() {
 }
 
 commands.clean = function() {
-  shell.rm('syncdb/sql/*.sql');
+  fs.rmdir('syncdb/sql', function (err) {
+    if (err) console.log(err);
+    fs.mkdir('syncdb/sql', function (err) {
+      if (err) console.log(err);
+    });
+  });
 }
 
 commands.install = function() {
