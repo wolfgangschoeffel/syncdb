@@ -20,32 +20,35 @@ var replacements = [
   //,[config.localDb.charset, config.remoteDb.charset]
 ];
 
-commands.push = function() {
-  // 1. Dump local db
+
+commands.push = function(callback) {
+
   var localDumpFile = localDB.dump();
-  // 2. search and replace
+
   replacements.forEach(function(replacement) {
+
     replaceInFile(replacement[0], replacement[1], localDumpFile);
   });
-  // 3. upload dump via ftp
-  ftp.put(localDumpFile, function() {
-    // 4. start remote script
-    remote.push(localDumpName, function(body) {
-      console.log(body);
-      process.exit(0);
-    });
+
+  ftp.put(localDumpFile, function(error) {
+
+    if (error) return callback(error);
+    remote.push(localDumpName, callback);
   });
 };
 
-commands.pull = function() {
+
+commands.pull = function(callback) {
 
   // localDB.dump(); // (why?)
+  remote.pull(function(error, remoteDumpFile) {
 
-  remote.pull(function(remoteDumpFile) {
-    // download via ftp
-    ftp.get(remoteDumpFile, function() {
+    if (error) return callback(error);
+    ftp.get(remoteDumpFile, function(error) {
 
+      if (error) return callback(error);
       replacements.forEach(function(replacement) {
+
         replaceInFile(replacement[1], replacement[0], remoteDumpFile);
       });
 
@@ -54,18 +57,22 @@ commands.pull = function() {
   });
 }
 
-commands.clean = function() {
-  fs.rmdir('syncdb/sql', function (err) {
-    if (err) console.log(err);
-    fs.mkdir('syncdb/sql', function (err) {
-      if (err) console.log(err);
-    });
+
+commands.clean = function(callback) {
+
+  fs.rmdir('syncdb/sql', function (error) {
+
+    if (error) return callback(error);
+    fs.mkdir('syncdb/sql', callback);
   });
 }
 
-commands.install = function() {
+
+commands.install = function(callback) {
   // upload remote config and remote php file
+  callback();
 }
+
 
 module.exports = commands;
 
