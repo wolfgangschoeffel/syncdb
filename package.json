@@ -2,16 +2,22 @@
   "name": "syncdb",
   "version": "0.0.1",
   "description": "syncdb is a tool to sync mysql dbs via ftp",
-  "bin": { "syncdb": "./index.js" },
+  "main": "./index.js",
+  "bin": {
+    "syncdb": "./syncdb.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Wolfang Schöffel <wolfgang@unfun.de>",
-  "contributors": ["Emanuel Tannert <post@etannert.de>"],
+  "contributors": [
+    "Emanuel Tannert <post@etannert.de>"
+  ],
   "license": "ISC",
   "repository": "wolfgangschoeffel/syncdb",
   "bugs": "https://github.com/wolfgangschoeffel/syncdb/issues",
   "dependencies": {
+    "commander": "^2.8.1",
     "ftp": "^0.3.10",
     "request": "^2.55.0",
     "shelljs": "^0.4.0"
