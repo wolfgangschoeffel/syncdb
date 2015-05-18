@@ -24,16 +24,15 @@ var replacements = [
 commands.push = function(callback) {
 
   localDB.dump(function(error, localDumpFile) {
-
     if (error) return callback(error);
-    replacements.forEach(function(replacement) {
 
+    replacements.forEach(function(replacement) {
       replaceInFile(replacement[0], replacement[1], localDumpFile);
     });
 
     ftp.put(localDumpFile, function(error) {
-
       if (error) return callback(error);
+
       remote.push(localDumpFile, callback);
     });
   });
@@ -44,17 +43,22 @@ commands.pull = function(callback) {
 
   // localDB.dump(); // (why?)
   remote.pull(function(error, remoteDumpFile) {
-
     if (error) return callback(error);
+
     ftp.get(remoteDumpFile, function(error) {
-
       if (error) return callback(error);
-      replacements.forEach(function(replacement) {
 
+      replacements.forEach(function(replacement) {
         replaceInFile(replacement[1], replacement[0], remoteDumpFile);
       });
 
-      localDB.populate(remoteDumpFile);
+      localDB.populate(remoteDumpFile, function (error) {
+        if (error) {
+          callback(error);
+        } else {
+          callback(null, 'No errors, local database should be in sync :)');
+        }
+      });
     });
   });
 }
