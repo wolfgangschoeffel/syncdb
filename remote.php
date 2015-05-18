@@ -6,33 +6,26 @@
     $local_dump_name = $data['localDumpName'];
     $method = $data['method'];
 
-    // some validation here
+    // define functions first
 
-    if ($method === 'push') {
-        push();
+    function export_database($user, $pass, $db, $host)
+    {
+        $remote_dump_name = 'remote-db-' . date("Y-m-d-h-i") . '.sql';
+
+        $mdpath = '/mysqldump-php-1.4.1/src/Ifsnop/Mysqldump/Mysqldump.php';
+        include_once(dirname(__FILE__) . $mdpath);
+
+        $dump = new Ifsnop\Mysqldump\Mysqldump($db, $user, $pass, $host);
+        $dump->start($remote_dump_name);
+
+        return $remote_dump_name;
     }
 
-
-    if ($method === 'pull') {
-        pull();
-    }
-
-    function push() {
-        global $r_db_user, $r_db_pass, $r_db_name, $r_db_host, $local_dump_name;
-
+    function import_database($user, $pass, $db, $host, $file)
+    {
         /**
-         * // Why dump first?
-         *
-         * $remote_dump_name = 'remote-db-' . date("Y-m-d-h-i") . '.sql';
-         *
-         *
-         * $remote_dump = "mysqldump -u {$r_db_user} -p{$r_db_pass} {$r_db_name} > sql/{$remote_dump_name}";
-         * shell_exec($remote_dump);
-         */
-
-        //echo "push ready";
-        /**
-         * Code below copied from http://stackoverflow.com/questions/19751354/how-to-import-sql-file-in-mysql-database-using-php
+         * Code of this function copied from
+         * http://stackoverflow.com/questions/19751354/how-to-import-sql-file-in-mysql-database-using-php
          * and modified by me, E.
          */
 
@@ -44,38 +37,45 @@
         // Temporary variable, used to store current query
         $templine = '';
         // Read in entire file
-        $lines = file($local_dump_name);
+        $lines = file($file);
         // Loop through each line
         foreach ($lines as $line)
         {
-        // Skip it if it's a comment
-        if (substr($line, 0, 2) == '--' || $line == '')
-            continue;
+            // Skip it if it's a comment
+            if (substr($line, 0, 2) == '--' || $line == '')
+                continue;
 
-        // Add this line to the current segment
-        $templine .= $line;
-        // If it has a semicolon at the end, it's the end of the query
-        if (substr(trim($line), -1, 1) == ';')
-        {
-            // Perform the query
-            mysql_query($templine) or print('Error performing query \'<strong>' . $templine . '\': ' . mysql_error() . '<br /><br />');
-            // Reset temp variable to empty
-            $templine = '';
+            // Add this line to the current segment
+            $templine .= $line;
+            // If it has a semicolon at the end, it's the end of the query
+            if (substr(trim($line), -1, 1) == ';')
+            {
+                // Perform the query
+                mysql_query($templine) or return 'Error performing query "' . $templine . '": ' . mysql_error();
+                // Reset temp variable to empty
+                $templine = '';
+            }
         }
-        }
-        echo "Tables imported successfully";
+        return true;
     }
 
-    function pull() {
-        global $r_db_user, $r_db_pass, $r_db_name, $r_db_host;
+    // some validation here
 
-        $remote_dump_name = 'remote-db-' . date("Y-m-d-h-i") . '.sql';
+    if ($method === 'push') {
 
-        $mdpath = '/mysqldump-php-1.4.1/src/Ifsnop/Mysqldump/Mysqldump.php';
-        include_once(dirname(__FILE__) . $mdpath);
-        $dump = new Ifsnop\Mysqldump\Mysqldump(
-            $r_db_name, $r_db_user, $r_db_pass, $r_db_host);
-        $dump->start($remote_dump_name);
+        $import_result = import_database($r_db_user, $r_db_pass, $r_db_name, $r_db_host, $local_dump_name);
+
+        if ($import_result === true) {
+          echo 'Tables imported successfully';
+        } else { // error case
+          echo $import_result;
+        }
+    }
+
+    if ($method === 'pull') {
+
+        // no explicit error handling here ...
+        $remote_dump_name = export_database($r_db_user, $r_db_pass, $r_db_name, $r_db_host);
 
         $returnData = array(
             'remoteDumpName' => $remote_dump_name
