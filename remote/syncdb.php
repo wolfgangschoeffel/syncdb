@@ -125,7 +125,7 @@ function export_database($user, $pass, $name, $host, $tables = '*') {
     return $remote_dump_name;
 }
 
-function import_database($user, $pass, $db, $host, $file) {
+function import_database($user, $pass, $name, $host, $file) {
     /**
      * Code of this function copied from
      * http://stackoverflow.com/questions/19751354/how-to-import-sql-file-in-mysql-database-using-php
@@ -133,9 +133,9 @@ function import_database($user, $pass, $db, $host, $file) {
      */
 
     // Connect to MySQL server
-    mysql_connect($r_db_host, $r_db_user, $r_db_pass) or die('Error connecting to MySQL server: ' . mysql_error());
+    mysql_connect($host, $user, $pass) or die('Error connecting to MySQL server: ' . mysql_error());
     // Select database
-    mysql_select_db($r_db_name) or die('Error selecting MySQL database: ' . mysql_error());
+    mysql_select_db($name) or die('Error selecting MySQL database: ' . mysql_error());
 
     // Temporary variable, used to store current query
     $templine = '';
