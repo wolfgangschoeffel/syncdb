@@ -8,8 +8,14 @@ var localDB = require('./lib/local-db')(config.localDb);
 
 var commands = {};
 
+function escapeRegExp(str) {
+  // escape search string like proposed here:
+  // http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
 function replaceInFile(searchString, replacement, file) {
-  var regex = new RegExp(searchString, 'g');
+  var regex = new RegExp(escapeRegExp(searchString), 'g');
   var result = fs.readFileSync(file, 'utf8').replace(regex, replacement);
   fs.writeFileSync(file, result, 'utf8');
   return result;
