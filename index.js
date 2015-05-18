@@ -71,20 +71,20 @@ commands.pull = function(callback) {
 }
 
 
-commands.clean = function(callback) {
+/*commands.clean = function(callback) {
 
   fs.rmdir('syncdb/sql', function (error) {
 
     if (error) return callback(error);
     fs.mkdir('syncdb/sql', callback);
   });
-}
+}*/
 
 
-commands.install = function(callback) {
+//commands.install = function(callback) {
   // upload remote config and remote php file
-  callback();
-}
+  //callback();
+//}
 
 
 module.exports = commands;

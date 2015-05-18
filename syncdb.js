@@ -27,13 +27,13 @@ program.command('pull')
   .description('the other way round')
   .action(logAsyncErrors(commands.pull));
 
-program.command('clean')
+/*program.command('clean')
   .description('remove old database dumps from syncdb directory')
   .action(logAsyncErrors(commands.clean));
 
 program.command('install')
   .description('install remote.php script on remote server')
-  .action(logAsyncErrors(commands.install));
+  .action(logAsyncErrors(commands.install));*/
 
 // TODO display message end exit with error on unknwon command
 //program.command('*')
