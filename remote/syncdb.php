@@ -61,14 +61,16 @@
 
     // some validation here
 
+    header('content-type:application/json');
+
     if ($method === 'push') {
 
         $import_result = import_database($r_db_user, $r_db_pass, $r_db_name, $r_db_host, $local_dump_name);
 
         if ($import_result === true) {
-          echo 'Tables imported successfully';
+          echo json_encode(array('success' => 'Tables imported successfully'));
         } else { // error case
-          echo $import_result;
+          echo json_encode(array('error' => $import_result));
         }
     }
 
@@ -83,4 +85,6 @@
 
         echo json_encode($returnData);
     }
+
+    exit();
 
