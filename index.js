@@ -23,17 +23,19 @@ var replacements = [
 
 commands.push = function(callback) {
 
-  var localDumpFile = localDB.dump();
-
-  replacements.forEach(function(replacement) {
-
-    replaceInFile(replacement[0], replacement[1], localDumpFile);
-  });
-
-  ftp.put(localDumpFile, function(error) {
+  localDB.dump(function(error, localDumpFile) {
 
     if (error) return callback(error);
-    remote.push(localDumpName, callback);
+    replacements.forEach(function(replacement) {
+
+      replaceInFile(replacement[0], replacement[1], localDumpFile);
+    });
+
+    ftp.put(localDumpFile, function(error) {
+
+      if (error) return callback(error);
+      remote.push(localDumpName, callback);
+    });
   });
 };
 
