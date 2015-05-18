@@ -6,9 +6,12 @@ var program = require('commander');
 function logAsyncErrors(fn) {
   // decorate commands with error logging callback
   return function() {
-    fn(function(error) {
+    fn(function(error, message) {
       if (error) {
         console.log('Error: ' + error.message);
+      }
+      if (message) {
+        console.log('Message: ' + message);
       }
     });
   };
