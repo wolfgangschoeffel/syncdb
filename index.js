@@ -34,7 +34,7 @@ commands.push = function(callback) {
     ftp.put(localDumpFile, function(error) {
 
       if (error) return callback(error);
-      remote.push(localDumpName, callback);
+      remote.push(localDumpFile, callback);
     });
   });
 };
