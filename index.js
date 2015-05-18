@@ -39,7 +39,8 @@ commands.push = function(callback) {
     ftp.put(localDumpFile, function(error) {
       if (error) return callback(error);
 
-      remote.push(localDumpFile, callback);
+      var localDumpName = localDumpFile.slice(7); // strip syncdb/ path
+      remote.push(localDumpName, callback);
     });
   });
 };
