@@ -33,7 +33,7 @@ commands.push = function(callback) {
     if (error) return callback(error);
 
     replacements.forEach(function(replacement) {
-      replaceInFile(replacement[0], replacement[1], localDumpFile);
+      replaceInFile(replacement[1], replacement[0], localDumpFile);
     });
 
     ftp.put(localDumpFile, function(error) {
@@ -55,7 +55,7 @@ commands.pull = function(callback) {
       if (error) return callback(error);
 
       replacements.forEach(function(replacement) {
-        replaceInFile(replacement[1], replacement[0], remoteDumpFile);
+        replaceInFile(replacement[0], replacement[1], remoteDumpFile);
       });
 
       localDB.populate(remoteDumpFile, function (error) {
