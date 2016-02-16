@@ -65,12 +65,12 @@ function export_database($user, $pass, $name, $host, $tables = '*') {
         $row2 = mysql_fetch_row(mysql_query('SHOW CREATE TABLE ' . $table));
         $return .= "\n\n" . $row2[1] . ";\n\n";
 
-        for ($i = 0; $i < $num_fields; $i++) 
+        for ($i = 0; $i < $num_fields; $i++)
         {
             while($row = mysql_fetch_row($result))
             {
                 $return .= 'INSERT INTO ' . $table . ' VALUES(';
-                for($j = 0; $j < $num_fields; $j++) 
+                for($j = 0; $j < $num_fields; $j++)
                 {
                     $row[$j] = addslashes($row[$j]);
                     $row[$j] = preg_replace("/\n/", "\\n", $row[$j]);
@@ -184,7 +184,7 @@ if ($method === 'pull') {
 }
 
 if($method === 'ping') {
-    
+
     send_data(array('hello' => 'i am here'));
 }
 
